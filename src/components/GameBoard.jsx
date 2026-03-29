@@ -31,7 +31,7 @@ export default function GameBoard({
   }, [])
 
   const isDraggable = useCallback(({ piece }) => {
-    if (isThinking || gameOver) return false
+    if (window.innerWidth <= 700 || isThinking || gameOver) return false
     const playerChar = playerColor === 'white' ? 'w' : 'b'
     return piece.startsWith(playerChar)
   }, [isThinking, gameOver, playerColor])

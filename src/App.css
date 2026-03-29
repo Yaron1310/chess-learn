@@ -110,6 +110,12 @@
 
 /* ── Mobile ── */
 @media (max-width: 700px) {
+  .app {
+    min-height: unset;
+    height: 100vh;
+    overflow: hidden;
+  }
+
   .app-header {
     padding: 0 14px;
     height: 50px;
@@ -128,8 +134,9 @@
   .app-main {
     flex-direction: column;
     align-items: center;
-    padding: 12px 8px 24px;
-    gap: 16px;
+    padding: 12px 8px 0;
+    gap: 8px;
+    overflow: hidden;
   }
 
   .board-area {

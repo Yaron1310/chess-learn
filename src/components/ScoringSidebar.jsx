@@ -77,9 +77,12 @@ export default function ScoringSidebar({
 
       {isOpen && (
         <div className="sidebar-content">
-          <h2 className="sidebar-title">
-            {isExploring ? '🔀 Exploring Branch' : '📊 Move Analysis'}
-          </h2>
+          <div className="sidebar-title-row">
+            <h2 className="sidebar-title">
+              {isExploring ? '🔀 Exploring Branch' : '📊 Move Analysis'}
+            </h2>
+            <button className="sidebar-close-btn" onClick={onToggle} title="Close">✕</button>
+          </div>
 
           <div className="sidebar-body">
             {isAnalyzing ? (
