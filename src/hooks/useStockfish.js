@@ -33,8 +33,10 @@ export function useStockfish() {
   const callbackRef = useRef(null)   // current one-shot output listener
 
   useEffect(() => {
-    // Use ASM.js (pure JS) version — no WASM, works in any browser
-    const worker = new Worker('/stockfish-18-asm.js')
+    // Use ASM.js (pure JS) version — no WASM, works in any browser.
+    // import.meta.env.BASE_URL resolves correctly whether served from root (dev)
+    // or a subdirectory like /wp-content/chess-learn/ (production).
+    const worker = new Worker(import.meta.env.BASE_URL + 'stockfish-18-asm.js')
     workerRef.current = worker
 
     worker.onmessage = (e) => {
