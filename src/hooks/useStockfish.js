@@ -80,6 +80,9 @@ export function useStockfish() {
       let bestMove = null
       let score = 0
 
+      // Stop any in-progress search before starting a new one
+      send('stop')
+
       callbackRef.current = (line) => {
         if (line.startsWith('info') && line.includes('score')) {
           const cpMatch   = line.match(/score cp (-?\d+)/)
@@ -105,6 +108,8 @@ export function useStockfish() {
     const { skill, depth } = SKILL_LEVELS[skillLevelIndex]
 
     return new Promise((resolve) => {
+      send('stop')
+
       callbackRef.current = (line) => {
         if (line.startsWith('bestmove')) {
           const parts = line.split(' ')

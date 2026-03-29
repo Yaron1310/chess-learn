@@ -50,10 +50,11 @@ export default function App() {
     const fenAfterUserMove = getGame().fen()
 
     try {
-      const [{ bestMove, score: bestScore }, { score: userScore }] = await Promise.all([
-        evaluatePosition(fenBeforeMove, EVAL_DEPTH),
-        evaluatePosition(fenAfterUserMove, EVAL_DEPTH),
-      ])
+      // Must be sequential — Stockfish uses a single callback slot.
+      // Running both in parallel via Promise.all causes the second call to
+      // overwrite the first's callback, leaving the first promise unresolved.
+      const { bestMove, score: bestScore } = await evaluatePosition(fenBeforeMove, EVAL_DEPTH)
+      const { score: userScore }           = await evaluatePosition(fenAfterUserMove, EVAL_DEPTH)
 
       // bestScore is from white's perspective (positive = white advantage)
       // After user (white) moves, userScore from white's perspective
