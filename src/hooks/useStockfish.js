@@ -9,11 +9,9 @@ export const SKILL_LEVELS = [
   { label: 'Master',       depth: 15, skill: 20 },
 ]
 
-// Converts centipawn loss to a 1-100 quality score
-// cp_loss = 0 → 100%, large loss → approaches 1%
+// Converts centipawn loss to a 1–100 quality score
 export function cpLossToScore(cpLoss) {
   if (cpLoss <= 0) return 100
-  // Exponential decay: each 100cp loss roughly halves the score
   const score = Math.round(100 * Math.exp(-cpLoss / 150))
   return Math.max(1, Math.min(100, score))
 }
@@ -27,70 +25,68 @@ export function scoreToCategory(score) {
 }
 
 export function useStockfish() {
-  const workerRef = useRef(null)
-  const readyRef  = useRef(false)
-  const pendingRef = useRef([])       // commands queued before init completes
-  const callbackRef = useRef(null)    // current one-shot output listener
+  // stockfish-18-lite-single.js is designed to run AS a Web Worker.
+  // It receives plain UCI strings via postMessage and emits output the same way.
+  const workerRef   = useRef(null)
+  const readyRef    = useRef(false)
+  const pendingRef  = useRef([])     // commands queued before 'uciok'
+  const callbackRef = useRef(null)   // current one-shot output listener
 
   useEffect(() => {
-    const worker = new Worker(new URL('../workers/stockfish.worker.js', import.meta.url))
+    const worker = new Worker('/stockfish-18-lite-single.js')
     workerRef.current = worker
 
     worker.onmessage = (e) => {
-      const { type, line } = e.data
+      const line = typeof e.data === 'string' ? e.data : String(e.data)
 
-      if (type === 'ready') {
+      // Engine is ready once we receive 'uciok'
+      if (!readyRef.current && line === 'uciok') {
         readyRef.current = true
-        // flush queued commands
-        pendingRef.current.forEach(cmd => worker.postMessage({ type: 'command', command: cmd }))
+        pendingRef.current.forEach(cmd => worker.postMessage(cmd))
         pendingRef.current = []
         return
       }
 
-      if (type === 'output' && callbackRef.current) {
+      if (callbackRef.current) {
         callbackRef.current(line)
       }
     }
 
-    worker.postMessage({ type: 'init' })
+    worker.onerror = (err) => console.error('Stockfish worker error:', err)
 
-    return () => {
-      worker.terminate()
-    }
+    // Kick off UCI handshake
+    worker.postMessage('uci')
+
+    return () => worker.terminate()
   }, [])
 
   const send = useCallback((command) => {
     if (!readyRef.current) {
       pendingRef.current.push(command)
     } else {
-      workerRef.current?.postMessage({ type: 'command', command })
+      workerRef.current?.postMessage(command)
     }
   }, [])
 
-  // Returns a promise that resolves with the best move evaluation
-  // Given a FEN, asks Stockfish to evaluate the best move at given depth.
-  // Resolves: { bestMove: 'e2e4', score: <centipawns from white's perspective> }
+  // Evaluate a position at the given depth.
+  // Resolves: { bestMove, score (centipawns, white-positive) }
   const evaluatePosition = useCallback((fen, depth = 12) => {
     return new Promise((resolve) => {
       let bestMove = null
       let score = 0
-      let isMate = false
 
       callbackRef.current = (line) => {
-        // Parse score from info lines
         if (line.startsWith('info') && line.includes('score')) {
-          const cpMatch  = line.match(/score cp (-?\d+)/)
+          const cpMatch   = line.match(/score cp (-?\d+)/)
           const mateMatch = line.match(/score mate (-?\d+)/)
-          if (cpMatch)   { score = parseInt(cpMatch[1], 10);  isMate = false }
-          if (mateMatch) { score = parseInt(mateMatch[1], 10) > 0 ? 100000 : -100000; isMate = true }
+          if (cpMatch)   score = parseInt(cpMatch[1], 10)
+          if (mateMatch) score = parseInt(mateMatch[1], 10) > 0 ? 100000 : -100000
         }
-
-        // Final best move answer
         if (line.startsWith('bestmove')) {
           const parts = line.split(' ')
           bestMove = parts[1] === '(none)' ? null : parts[1]
           callbackRef.current = null
-          resolve({ bestMove, score, isMate })
+          resolve({ bestMove, score })
         }
       }
 
@@ -99,10 +95,9 @@ export function useStockfish() {
     })
   }, [send])
 
-  // Asks Stockfish to pick a move for the AI at a given skill level
-  // Returns: { bestMove: 'e2e4' }
-  const getAIMove = useCallback((fen, skillLevel) => {
-    const { skill, depth } = SKILL_LEVELS[skillLevel]
+  // Ask Stockfish to pick a move for the AI at a given skill level index.
+  const getAIMove = useCallback((fen, skillLevelIndex) => {
+    const { skill, depth } = SKILL_LEVELS[skillLevelIndex]
 
     return new Promise((resolve) => {
       callbackRef.current = (line) => {
