@@ -63,10 +63,12 @@ export default function ScoringSidebar({
 }) {
   return (
     <div className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
-      {/* Toggle tab */}
+      {/* Toggle tab — vertical on desktop, horizontal bar on mobile */}
       <button className="sidebar-toggle" onClick={onToggle} title={isOpen ? 'Collapse' : 'Expand'}>
+        <span className="toggle-label">
+          {isExploring ? '🔀 Branch Analysis' : '📊 Move Analysis'}
+        </span>
         <span className="toggle-arrow">{isOpen ? '›' : '‹'}</span>
-        {!isOpen && <span className="toggle-label">Analysis</span>}
       </button>
 
       {isOpen && (

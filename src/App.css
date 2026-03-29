@@ -10,33 +10,19 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
-  height: 60px;
+  padding: 0 20px;
+  height: 56px;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);
-  gap: 16px;
   flex-shrink: 0;
 }
 
-.header-left {
-  flex: 0 0 auto;
-}
-
 .logo {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   letter-spacing: -0.3px;
   color: var(--text-primary);
-}
-
-.header-center {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-}
-
-.header-right {
-  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .header-right {
@@ -48,11 +34,12 @@
 .undo-btn {
   background: var(--bg-card);
   color: var(--text-secondary);
-  padding: 8px 16px;
+  padding: 7px 14px;
   border-radius: var(--radius);
   font-weight: 600;
   font-size: 13px;
   border: 1px solid var(--border);
+  white-space: nowrap;
 }
 
 .undo-btn:hover:not(:disabled) {
@@ -63,10 +50,11 @@
 .new-game-btn {
   background: var(--accent);
   color: #fff;
-  padding: 8px 20px;
+  padding: 7px 16px;
   border-radius: var(--radius);
   font-weight: 600;
   font-size: 13px;
+  white-space: nowrap;
 }
 
 .new-game-btn:hover {
@@ -77,11 +65,13 @@
 .app-main {
   flex: 1;
   display: flex;
+  flex-direction: row;
   align-items: flex-start;
   justify-content: center;
+  padding: 24px 20px;
   gap: 0;
-  padding: 32px 24px;
-  overflow: hidden;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* ── Board area ── */
@@ -90,16 +80,19 @@
   flex-direction: column;
   align-items: center;
   gap: 10px;
+  /* Don't let it grow beyond the board's natural size */
+  flex-shrink: 0;
 }
 
 .player-label {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-secondary);
   padding: 4px 12px;
   background: var(--bg-card);
   border-radius: 20px;
   border: 1px solid var(--border);
+  white-space: nowrap;
 }
 
 .player-label.you {
@@ -107,25 +100,32 @@
   border-color: var(--accent);
 }
 
-/* ── Responsive ── */
-@media (max-width: 768px) {
+/* ── Mobile ── */
+@media (max-width: 700px) {
+  .app-header {
+    padding: 0 14px;
+    height: 50px;
+  }
+
+  .logo {
+    font-size: 16px;
+  }
+
+  .undo-btn,
+  .new-game-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
   .app-main {
     flex-direction: column;
     align-items: center;
-    padding: 16px;
+    padding: 12px 8px 24px;
+    gap: 16px;
   }
 
-  .app-header {
-    padding: 0 12px;
-    flex-wrap: wrap;
-    height: auto;
-    padding-top: 10px;
-    padding-bottom: 10px;
-  }
-
-  .header-center {
-    order: 3;
-    flex: 0 0 100%;
-    padding-bottom: 6px;
+  .board-area {
+    width: 100%;
+    align-items: center;
   }
 }

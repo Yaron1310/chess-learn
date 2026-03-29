@@ -15,10 +15,16 @@ export default function GameBoard({
   playerColor,
   boardOrientation,
 }) {
-  const [boardWidth, setBoardWidth] = useState(Math.min(560, window.innerWidth - 40))
+  const calcWidth = () => {
+    // On mobile use 16px padding each side (32px total), desktop 40px total
+    const padding = window.innerWidth <= 700 ? 32 : 40
+    return Math.min(560, window.innerWidth - padding)
+  }
+
+  const [boardWidth, setBoardWidth] = useState(calcWidth)
 
   useEffect(() => {
-    const handleResize = () => setBoardWidth(Math.min(560, window.innerWidth - 40))
+    const handleResize = () => setBoardWidth(calcWidth())
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])

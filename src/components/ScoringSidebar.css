@@ -1,3 +1,4 @@
+/* ── Desktop: sidebar sits to the right of the board ── */
 .sidebar {
   position: relative;
   display: flex;
@@ -5,24 +6,19 @@
   align-items: flex-start;
   transition: width 0.25s ease;
   margin-left: 16px;
+  flex-shrink: 0;
 }
 
-.sidebar.open {
-  width: 280px;
-  min-width: 280px;
-}
+.sidebar.open  { width: 280px; min-width: 280px; }
+.sidebar.closed { width: 36px;  min-width: 36px;  }
 
-.sidebar.closed {
-  width: 36px;
-  min-width: 36px;
-}
-
-/* ── Toggle tab ── */
+/* ── Toggle tab (desktop: vertical, left edge of sidebar) ── */
 .sidebar-toggle {
   position: absolute;
   left: -16px;
   top: 24px;
   width: 16px;
+  min-height: 64px;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-right: none;
@@ -49,7 +45,6 @@
   font-size: 16px;
   font-weight: 700;
   writing-mode: horizontal-tb;
-  transform: none;
 }
 
 .toggle-label {
@@ -122,22 +117,9 @@
   gap: 8px;
 }
 
-.move-san {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.move-symbol {
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.move-category {
-  font-size: 13px;
-  font-weight: 600;
-  margin-left: auto;
-}
+.move-san      { font-size: 20px; font-weight: 700; color: var(--text-primary); }
+.move-symbol   { font-size: 18px; font-weight: 700; }
+.move-category { font-size: 13px; font-weight: 600; margin-left: auto; }
 
 /* ── Score bar ── */
 .score-bar-track {
@@ -185,20 +167,11 @@
   font-size: 12px;
 }
 
-.detail-label {
-  color: var(--text-muted);
-}
+.detail-label { color: var(--text-muted); }
+.detail-value { font-weight: 600; color: var(--text-secondary); }
+.best-move .detail-value.highlight { color: var(--success); }
 
-.detail-value {
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.best-move .detail-value.highlight {
-  color: var(--success);
-}
-
-/* ── Sidebar footer ── */
+/* ── Footer ── */
 .sidebar-footer {
   padding: 12px 16px;
   border-top: 1px solid var(--border);
@@ -229,40 +202,43 @@
   border: 1px solid var(--border);
 }
 
-.explore-btn.return:hover {
-  background: var(--bg-hover);
-}
+.explore-btn.return:hover { background: var(--bg-hover); }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Responsive ── */
-@media (max-width: 768px) {
+/* ── Mobile: sidebar sits below the board, full width ── */
+@media (max-width: 700px) {
   .sidebar {
+    width: 100% !important;
+    min-width: 0 !important;
     margin-left: 0;
-    margin-top: 16px;
+    flex-direction: column;
   }
 
-  .sidebar.open {
-    width: 100%;
-    min-width: 0;
-  }
-
+  /* Toggle becomes a horizontal bar across the top */
   .sidebar-toggle {
-    left: auto;
-    right: 8px;
-    top: -20px;
+    position: static;
+    width: 100%;
+    min-height: unset;
     writing-mode: horizontal-tb;
     flex-direction: row;
-    border-radius: 6px 6px 0 0;
-    border-right: 1px solid var(--border);
-    border-bottom: none;
-    width: auto;
-    padding: 4px 10px;
+    justify-content: space-between;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 10px 14px;
+    gap: 8px;
+  }
+
+  .toggle-arrow { font-size: 14px; }
+
+  .toggle-label {
+    flex: 1;
+    text-align: left;
+    margin-top: 0;
   }
 
   .sidebar-content {
     width: 100%;
+    margin-top: 4px;
   }
 }
