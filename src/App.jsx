@@ -1,8 +1,9 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { Chess } from 'chess.js'
 import GameBoard from './components/GameBoard'
 import ScoringSidebar from './components/ScoringSidebar'
 import GameSetupModal from './components/GameSetupModal'
+import CapturedPieces from './components/CapturedPieces'
 import { useChessGame } from './hooks/useChessGame'
 import { useStockfish, cpLossToScore } from './hooks/useStockfish'
 import './App.css'
@@ -11,7 +12,6 @@ const EVAL_DEPTH = 14
 
 export default function App() {
   const [skillLevel, setSkillLevel]   = useState(1)
-  // Start collapsed on mobile so the board isn't pushed off screen
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 700)
   const [isThinking, setIsThinking]   = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
@@ -19,6 +19,7 @@ export default function App() {
   const [lastMove, setLastMove]       = useState(null)
   const [playerColor, setPlayerColor] = useState(null)
   const [showSetup, setShowSetup]     = useState(true)
+  const [showBestMove, setShowBestMove] = useState(false)
 
   const [selectedSquare, setSelectedSquare] = useState(null)
   const [optionSquares, setOptionSquares]   = useState({})
@@ -26,12 +27,25 @@ export default function App() {
   const aiFirstMoveFiredRef = useRef(false)
 
   const {
-    fen, isExploring, gameOver,
+    fen, isExploring, gameOver, moveHistory,
     getGame, makeMove, undoMove,
     enterExplore, exitExplore, resetGame,
   } = useChessGame()
 
   const { evaluatePosition, getAIMove } = useStockfish()
+
+  // ── Captured pieces ───────────────────────────────────────────────────────
+  // capturedByWhite = black pieces white took; capturedByBlack = white pieces black took
+  const { capturedByWhite, capturedByBlack } = useMemo(() => {
+    const byWhite = [], byBlack = []
+    moveHistory.forEach(m => {
+      if (m.captured) {
+        if (m.color === 'w') byWhite.push(m.captured)
+        else                 byBlack.push(m.captured)
+      }
+    })
+    return { capturedByWhite: byWhite, capturedByBlack: byBlack }
+  }, [moveHistory])
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -41,13 +55,13 @@ export default function App() {
   }, [])
 
   const getOptionSquares = useCallback((square) => {
-    const game = getGame()
+    const game  = getGame()
     const moves = game.moves({ square, verbose: true })
     if (!moves.length) return {}
     const squares = {}
     moves.forEach(({ to }) => {
-      const targetPiece = game.get(to)
-      squares[to] = targetPiece
+      const hit = game.get(to)
+      squares[to] = hit
         ? { background: 'radial-gradient(circle, transparent 60%, rgba(0,0,0,0.25) 60%)', borderRadius: '50%' }
         : { background: 'radial-gradient(circle, rgba(0,0,0,0.22) 28%, transparent 28%)', borderRadius: '50%' }
     })
@@ -93,6 +107,7 @@ export default function App() {
     if (!move) return false
 
     clearSelection()
+    setShowBestMove(false)
     setLastMove({ from: move.from, to: move.to })
     setMoveScore(null)
     setIsAnalyzing(true)
@@ -105,8 +120,12 @@ export default function App() {
 
       const cpLoss = Math.max(0, bestScore - userScore)
 
+      // --- ORIGINAL scoring logic (reverted) ---
+      // isBestMove is true only when the UCI move string matches exactly
+      const isBestMove = !bestMove || bestMove === (move.from + move.to)
+
       let bestMoveSan = null
-      if (bestMove && bestMove !== move.from + move.to && cpLoss > 0) {
+      if (bestMove && bestMove !== move.from + move.to) {
         try {
           const evalGame = new Chess(fenBeforeMove)
           const obj = evalGame.move({
@@ -122,8 +141,9 @@ export default function App() {
 
       setMoveScore({
         moveSan:     move.san,
-        bestMoveSan: cpLoss > 0 ? bestMoveSan : null,
-        isBestMove:  cpLoss === 0,
+        bestMoveSan,
+        bestMoveUci: bestMove,        // raw UCI for "Show Best Move" highlighting
+        isBestMove,
         score:       cpLossToScore(cpLoss),
         cpLoss,
       })
@@ -170,6 +190,7 @@ export default function App() {
     const steps = isExploring ? 1 : 2
     if (undoMove(steps)) {
       clearSelection()
+      setShowBestMove(false)
       setMoveScore(null)
       setLastMove(null)
     }
@@ -184,11 +205,31 @@ export default function App() {
     setSkillLevel(skill)
     setMoveScore(null)
     setLastMove(null)
+    setShowBestMove(false)
     setIsThinking(false)
     setIsAnalyzing(false)
     setPlayerColor(color)
     setShowSetup(false)
   }, [resetGame, clearSelection])
+
+  // ── Derived: best-move highlight squares ─────────────────────────────────
+
+  const bestMoveSquares = showBestMove && moveScore?.bestMoveUci
+    ? {
+        from: moveScore.bestMoveUci.slice(0, 2),
+        to:   moveScore.bestMoveUci.slice(2, 4),
+      }
+    : null
+
+  // ── Captured pieces layout (depends on board orientation) ────────────────
+  // Top player's row shows pieces THEY captured; bottom player's row shows pieces THEY captured.
+  // When playing as white (white = bottom): top = opponent (black) captures; bottom = you (white) captures
+  const topCaptures    = playerColor === 'black'
+    ? { pieces: capturedByWhite, pieceColor: 'black' }   // top = opponent (white) captured black
+    : { pieces: capturedByBlack, pieceColor: 'white' }   // top = opponent (black) captured white
+  const bottomCaptures = playerColor === 'black'
+    ? { pieces: capturedByBlack, pieceColor: 'white' }   // bottom = you (black) captured white
+    : { pieces: capturedByWhite, pieceColor: 'black' }   // bottom = you (white) captured black
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -221,8 +262,11 @@ export default function App() {
 
       <main className="app-main">
         <div className="board-area">
-          <div className="player-label opponent">
-            {playerColor === 'black' ? 'You (Black)' : opponentLabel}
+          <div className="player-row">
+            <div className="player-label opponent">
+              {playerColor === 'black' ? 'You (Black)' : opponentLabel}
+            </div>
+            <CapturedPieces pieces={topCaptures.pieces} pieceColor={topCaptures.pieceColor} />
           </div>
 
           <GameBoard
@@ -235,12 +279,16 @@ export default function App() {
             lastMove={lastMove}
             selectedSquare={selectedSquare}
             optionSquares={optionSquares}
+            bestMoveSquares={bestMoveSquares}
             playerColor={playerColor || 'white'}
             boardOrientation={playerColor === 'black' ? 'black' : 'white'}
           />
 
-          <div className="player-label you">
-            {playerColor === 'black' ? opponentLabel : 'You (White)'}
+          <div className="player-row">
+            <div className="player-label you">
+              {playerColor === 'black' ? opponentLabel : 'You (White)'}
+            </div>
+            <CapturedPieces pieces={bottomCaptures.pieces} pieceColor={bottomCaptures.pieceColor} />
           </div>
         </div>
 
@@ -250,6 +298,8 @@ export default function App() {
           moveScore={moveScore}
           isAnalyzing={isAnalyzing}
           isExploring={isExploring}
+          showBestMove={showBestMove}
+          onToggleBestMove={() => setShowBestMove(v => !v)}
           onExplore={() => { enterExplore(); setSidebarOpen(true) }}
           onReturn={exitExplore}
         />

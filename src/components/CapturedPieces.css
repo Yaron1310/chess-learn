@@ -1,0 +1,30 @@
+.captured-pieces {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1px;
+  min-height: 22px;
+  flex: 1;
+}
+
+.captured-piece {
+  font-size: 16px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* White pieces are light symbols — need a dark bg to stay visible isn't required
+   but black pieces are dark symbols on a dark bg — add a subtle light pill */
+.cp-black {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 3px;
+  padding: 1px 2px;
+}
+
+.cp-white {
+  /* White symbols are naturally visible on the dark theme */
+  color: #d4d8e0;
+  text-shadow: 0 0 3px rgba(0,0,0,0.8);
+}

@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { scoreToCategory } from '../hooks/useStockfish'
 import './ScoringSidebar.css'
 
@@ -58,9 +57,14 @@ export default function ScoringSidebar({
   moveScore,
   isAnalyzing,
   isExploring,
+  showBestMove,
+  onToggleBestMove,
   onExplore,
   onReturn,
 }) {
+  // Show "best move" button only when there is a non-best move to highlight
+  const canShowBestMove = moveScore && !moveScore.isBestMove && moveScore.bestMoveUci
+
   return (
     <div className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
       {/* Toggle tab — vertical on desktop, horizontal bar on mobile */}
@@ -98,14 +102,26 @@ export default function ScoringSidebar({
                 ↩ Return to Game
               </button>
             ) : (
-              <button
-                className="explore-btn explore"
-                onClick={onExplore}
-                disabled={!moveScore && !isAnalyzing}
-                title="Explore this position in a branch without affecting your main game"
-              >
-                🔀 Explore
-              </button>
+              <>
+                <button
+                  className="explore-btn explore"
+                  onClick={onExplore}
+                  disabled={!moveScore && !isAnalyzing}
+                  title="Explore this position in a branch without affecting your main game"
+                >
+                  🔀 Explore
+                </button>
+
+                {canShowBestMove && (
+                  <button
+                    className={`explore-btn best-move-btn ${showBestMove ? 'active' : ''}`}
+                    onClick={onToggleBestMove}
+                    title="Highlight the best move on the board"
+                  >
+                    {showBestMove ? '🟢 Hide Best Move' : '💡 Show Best Move'}
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>

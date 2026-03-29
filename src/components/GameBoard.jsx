@@ -12,6 +12,7 @@ export default function GameBoard({
   lastMove,
   selectedSquare,
   optionSquares,
+  bestMoveSquares,
   playerColor,
   boardOrientation,
 }) {
@@ -41,11 +42,16 @@ export default function GameBoard({
     return onMove({ from: sourceSquare, to: targetSquare, promotion })
   }, [onMove])
 
-  // Merge last-move highlights + selected square + valid move dots
+  // Merge: last-move → best-move (green) → selected (blue) → valid dots
+  // Priority: option dots on top, then selected, then best move, then last move
   const squareStyles = {}
   if (lastMove) {
     squareStyles[lastMove.from] = { backgroundColor: 'rgba(255, 214, 10, 0.3)' }
     squareStyles[lastMove.to]   = { backgroundColor: 'rgba(255, 214, 10, 0.3)' }
+  }
+  if (bestMoveSquares) {
+    squareStyles[bestMoveSquares.from] = { backgroundColor: 'rgba(0, 200, 100, 0.5)' }
+    squareStyles[bestMoveSquares.to]   = { backgroundColor: 'rgba(0, 200, 100, 0.5)' }
   }
   if (selectedSquare) {
     squareStyles[selectedSquare] = { backgroundColor: 'rgba(79, 142, 247, 0.5)' }
