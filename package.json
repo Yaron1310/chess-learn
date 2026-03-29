@@ -1,0 +1,24 @@
+{
+  "name": "chess-learn",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "chess.js": "^1.0.0",
+    "react": "^18.3.1",
+    "react-chessboard": "^4.6.0",
+    "react-dom": "^18.3.1",
+    "stockfish": "^18.0.5"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.2"
+  }
+}
