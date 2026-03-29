@@ -39,6 +39,27 @@
   flex: 0 0 auto;
 }
 
+.header-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.undo-btn {
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 13px;
+  border: 1px solid var(--border);
+}
+
+.undo-btn:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
 .new-game-btn {
   background: var(--accent);
   color: #fff;

@@ -2,18 +2,14 @@ import { useState, useCallback, useRef } from 'react'
 import { Chess } from 'chess.js'
 
 export function useChessGame() {
-  // Main game instance (always the real game)
   const mainGameRef = useRef(new Chess())
-
-  // Explore snapshot — saved when user enters explore mode
   const exploreSnapshotRef = useRef(null)
 
-  const [fen, setFen]           = useState(mainGameRef.current.fen())
+  const [fen, setFen]               = useState(mainGameRef.current.fen())
   const [isExploring, setIsExploring] = useState(false)
-  const [gameOver, setGameOver] = useState(null) // null | { reason, winner }
-  const [moveHistory, setMoveHistory] = useState([]) // array of move objects
+  const [gameOver, setGameOver]     = useState(null)
+  const [moveHistory, setMoveHistory] = useState([])
 
-  // Returns the active Chess instance (explore branch or main game)
   const getGame = useCallback(() => mainGameRef.current, [])
 
   const checkGameOver = useCallback((game) => {
@@ -24,7 +20,7 @@ export function useChessGame() {
     }
     if (game.isDraw()) {
       let reason = 'Draw'
-      if (game.isStalemate())            reason = 'Stalemate'
+      if (game.isStalemate())               reason = 'Stalemate'
       else if (game.isThreefoldRepetition()) reason = 'Threefold Repetition'
       else if (game.isInsufficientMaterial()) reason = 'Insufficient Material'
       setGameOver({ reason, winner: null })
@@ -33,7 +29,6 @@ export function useChessGame() {
     return false
   }, [])
 
-  // Make a move on the active board. Returns the move object or null if illegal.
   const makeMove = useCallback((moveInput) => {
     const game = mainGameRef.current
     try {
@@ -51,7 +46,23 @@ export function useChessGame() {
     }
   }, [isExploring, checkGameOver])
 
-  // Enter explore mode: snapshot current state, continue playing freely
+  // Undo the last N half-moves. In explore mode, undoes 1; in main game, undoes 2 (player + AI).
+  const undoMove = useCallback((halfMoves = 2) => {
+    const game = mainGameRef.current
+    let undone = false
+    for (let i = 0; i < halfMoves; i++) {
+      const m = game.undo()
+      if (m) undone = true
+      else break
+    }
+    if (undone) {
+      setFen(game.fen())
+      setGameOver(null)
+      setMoveHistory(game.history({ verbose: true }))
+    }
+    return undone
+  }, [])
+
   const enterExplore = useCallback(() => {
     exploreSnapshotRef.current = {
       fen: mainGameRef.current.fen(),
@@ -60,16 +71,12 @@ export function useChessGame() {
     setIsExploring(true)
   }, [])
 
-  // Return from explore mode: restore snapshot
   const exitExplore = useCallback(() => {
     if (!exploreSnapshotRef.current) return
     const { fen: snapFen, history } = exploreSnapshotRef.current
-
-    const restoredGame = new Chess(snapFen)
-    mainGameRef.current = restoredGame
-
+    mainGameRef.current = new Chess(snapFen)
     setFen(snapFen)
-    setMoveHistory(history.map((m, i) => ({ ...m, fen: snapFen })))
+    setMoveHistory(history)
     setIsExploring(false)
     exploreSnapshotRef.current = null
     setGameOver(null)
@@ -91,6 +98,7 @@ export function useChessGame() {
     moveHistory,
     getGame,
     makeMove,
+    undoMove,
     enterExplore,
     exitExplore,
     resetGame,

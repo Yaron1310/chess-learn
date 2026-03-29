@@ -5,39 +5,46 @@ import './GameBoard.css'
 export default function GameBoard({
   fen,
   onMove,
+  onSquareClick,
   isThinking,
   gameOver,
   isExploring,
   lastMove,
+  selectedSquare,
+  optionSquares,
+  playerColor,
+  boardOrientation,
 }) {
   const [boardWidth, setBoardWidth] = useState(Math.min(560, window.innerWidth - 40))
 
   useEffect(() => {
-    const handleResize = () => {
-      setBoardWidth(Math.min(560, window.innerWidth - 40))
-    }
+    const handleResize = () => setBoardWidth(Math.min(560, window.innerWidth - 40))
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
   const isDraggable = useCallback(({ piece }) => {
-    // Only allow moving white pieces (user plays white), and only when not thinking
-    return !isThinking && !gameOver && piece.startsWith('w')
-  }, [isThinking, gameOver])
+    if (isThinking || gameOver) return false
+    const playerChar = playerColor === 'white' ? 'w' : 'b'
+    return piece.startsWith(playerChar)
+  }, [isThinking, gameOver, playerColor])
 
   const onDrop = useCallback((sourceSquare, targetSquare, piece) => {
     const promotion = piece[1]?.toLowerCase() === 'p' &&
       (targetSquare[1] === '8' || targetSquare[1] === '1') ? 'q' : undefined
-
     return onMove({ from: sourceSquare, to: targetSquare, promotion })
   }, [onMove])
 
-  // Highlight squares for last move
-  const customSquareStyles = {}
+  // Merge last-move highlights + selected square + valid move dots
+  const squareStyles = {}
   if (lastMove) {
-    customSquareStyles[lastMove.from] = { backgroundColor: 'rgba(255, 214, 10, 0.35)' }
-    customSquareStyles[lastMove.to]   = { backgroundColor: 'rgba(255, 214, 10, 0.35)' }
+    squareStyles[lastMove.from] = { backgroundColor: 'rgba(255, 214, 10, 0.3)' }
+    squareStyles[lastMove.to]   = { backgroundColor: 'rgba(255, 214, 10, 0.3)' }
   }
+  if (selectedSquare) {
+    squareStyles[selectedSquare] = { backgroundColor: 'rgba(79, 142, 247, 0.5)' }
+  }
+  Object.assign(squareStyles, optionSquares)
 
   return (
     <div className="board-wrapper">
@@ -56,7 +63,9 @@ export default function GameBoard({
 
       {gameOver && (
         <div className="gameover-banner">
-          {gameOver.winner ? `${gameOver.winner} wins by ${gameOver.reason}!` : gameOver.reason}
+          {gameOver.winner
+            ? `${gameOver.winner} wins by ${gameOver.reason}!`
+            : gameOver.reason}
         </div>
       )}
 
@@ -65,8 +74,10 @@ export default function GameBoard({
         boardWidth={boardWidth}
         position={fen}
         onPieceDrop={onDrop}
+        onSquareClick={onSquareClick}
         isDraggablePiece={isDraggable}
-        customSquareStyles={customSquareStyles}
+        customSquareStyles={squareStyles}
+        boardOrientation={boardOrientation || 'white'}
         animationDuration={200}
         customBoardStyle={{
           borderRadius: '6px',
