@@ -33,7 +33,8 @@ export function useStockfish() {
   const callbackRef = useRef(null)   // current one-shot output listener
 
   useEffect(() => {
-    const worker = new Worker('/stockfish-18-lite-single.js')
+    // Use ASM.js (pure JS) version — no WASM, works in any browser
+    const worker = new Worker('/stockfish-18-asm.js')
     workerRef.current = worker
 
     worker.onmessage = (e) => {
