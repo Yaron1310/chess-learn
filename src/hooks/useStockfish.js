@@ -39,9 +39,11 @@ export function useStockfish() {
 
     worker.onmessage = (e) => {
       const line = typeof e.data === 'string' ? e.data : String(e.data)
+      console.log('[Stockfish →]', line)
 
       // Engine is ready once we receive 'uciok'
       if (!readyRef.current && line === 'uciok') {
+        console.log('[Stockfish] Engine ready, flushing', pendingRef.current.length, 'queued commands')
         readyRef.current = true
         pendingRef.current.forEach(cmd => worker.postMessage(cmd))
         pendingRef.current = []
@@ -53,9 +55,9 @@ export function useStockfish() {
       }
     }
 
-    worker.onerror = (err) => console.error('Stockfish worker error:', err)
+    worker.onerror = (err) => console.error('[Stockfish] Worker error:', err)
 
-    // Kick off UCI handshake
+    console.log('[Stockfish] Sending uci handshake...')
     worker.postMessage('uci')
 
     return () => worker.terminate()
@@ -63,8 +65,10 @@ export function useStockfish() {
 
   const send = useCallback((command) => {
     if (!readyRef.current) {
+      console.log('[Stockfish] Queuing (not ready yet):', command)
       pendingRef.current.push(command)
     } else {
+      console.log('[Stockfish ←]', command)
       workerRef.current?.postMessage(command)
     }
   }, [])
