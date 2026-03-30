@@ -18,7 +18,8 @@
 /* White pieces are light symbols — need a dark bg to stay visible isn't required
    but black pieces are dark symbols on a dark bg — add a subtle light pill */
 .cp-black {
-  background: rgba(255, 255, 255, 0.18);
+  color: black;
+  background: #ffffffc2;
   border-radius: 3px;
   padding: 1px 2px;
 }

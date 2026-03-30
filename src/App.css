@@ -118,7 +118,6 @@
 @media (max-width: 700px) {
   .app {
     min-height: unset;
-    height: 100vh;
     overflow: hidden;
   }
 
