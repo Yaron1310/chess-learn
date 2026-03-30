@@ -66,7 +66,7 @@ export default function ScoringSidebar({
   const canShowBestMove = moveScore && !moveScore.isBestMove && moveScore.bestMoveUci
 
   return (
-    <div className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
+    <div className={`sidebar ${isOpen ? 'open' : 'closed'} ${isExploring ? 'exploring' : ''}`}>
       {/* Toggle tab — vertical on desktop, horizontal bar on mobile */}
       <button className="sidebar-toggle" onClick={onToggle} title={isOpen ? 'Collapse' : 'Expand'}>
         <span className="toggle-label">

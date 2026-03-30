@@ -36,15 +36,13 @@ export function useChessGame() {
       if (!move) return null
       const newFen = game.fen()
       setFen(newFen)
-      if (!isExploring) {
-        setMoveHistory(prev => [...prev, { ...move, fen: newFen }])
-      }
+      setMoveHistory(prev => [...prev, { ...move, fen: newFen }])
       checkGameOver(game)
       return move
     } catch {
       return null
     }
-  }, [isExploring, checkGameOver])
+  }, [checkGameOver])
 
   // Undo the last N half-moves. In explore mode, undoes 1; in main game, undoes 2 (player + AI).
   const undoMove = useCallback((halfMoves = 2) => {

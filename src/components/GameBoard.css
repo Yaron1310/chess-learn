@@ -3,7 +3,7 @@
   display: inline-block;
 }
 
-/* ── Explore banner ── */
+/* ── Explore banner (desktop only) ── */
 .explore-banner {
   background: linear-gradient(90deg, #7b2ff7, #4f8ef7);
   color: #fff;
@@ -13,6 +13,12 @@
   font-weight: 600;
   border-radius: var(--radius) var(--radius) 0 0;
   letter-spacing: 0.3px;
+}
+
+@media (max-width: 700px) {
+  .explore-banner {
+    display: none;
+  }
 }
 
 /* ── Thinking overlay ── */
