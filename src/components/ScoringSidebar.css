@@ -247,11 +247,9 @@
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Desktop: hide toggle tab when sidebar is open ── */
-@media (min-width: 701px) {
-  .sidebar.open .sidebar-toggle {
-    display: none;
-  }
+/* ── Hide toggle tab when sidebar is open (all screen sizes) ── */
+.sidebar.open .sidebar-toggle {
+  display: none;
 }
 
 /* ── Mobile: sidebar sits below the board, full width ── */
@@ -290,12 +288,7 @@
     margin-top: 4px;
   }
 
-  /* Close button redundant on mobile — toggle handles it */
-  .sidebar-close-btn {
-    display: none;
-  }
-
-  /* Compact title */
+  /* Compact title row with close button */
   .sidebar-title-row {
     border-bottom: none;
   }
@@ -304,6 +297,11 @@
     font-size: 10px;
     padding: 4px 10px 2px;
     letter-spacing: 0.2px;
+  }
+
+  .sidebar-close-btn {
+    padding: 6px 10px 0;
+    font-size: 13px;
   }
 
   /* Compact body */

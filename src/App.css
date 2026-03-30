@@ -1,7 +1,6 @@
 .app {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
   background: var(--bg-primary);
 }
 
@@ -59,6 +58,13 @@
 
 .new-game-btn:hover {
   background: var(--accent-hover);
+}
+
+/* ── Desktop only: fill full viewport height ── */
+@media (min-width: 701px) {
+  .app {
+    min-height: 100vh;
+  }
 }
 
 /* ── Main layout ── */
