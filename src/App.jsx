@@ -118,7 +118,10 @@ export default function App() {
       const { bestMove, score: bestScore } = await evaluatePosition(fenBeforeMove, EVAL_DEPTH)
       const { score: userScore }           = await evaluatePosition(fenAfterUserMove, EVAL_DEPTH)
 
-      const cpLoss = Math.max(0, bestScore - userScore)
+      // bestScore: side-to-move POV at fenBeforeMove (e.g. white)
+      // userScore: side-to-move POV at fenAfterUserMove (opponent) — opposite sign
+      // white's advantage after move = -userScore, so cpLoss = bestScore - (-userScore)
+      const cpLoss = Math.max(0, bestScore + userScore)
 
       // --- ORIGINAL scoring logic (reverted) ---
       // isBestMove is true only when the UCI move string matches exactly
